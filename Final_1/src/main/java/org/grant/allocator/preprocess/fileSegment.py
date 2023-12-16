@@ -64,4 +64,4 @@ def split_xml(file_path, output_dir, n_splits):
 # Replace 'your_large_xml_file.xml' with the path to your large XML file.
 # Specify the output directory where the split files should be saved.
 # Specify the number of splits.
-split_xml('C:\\Works\\大三\\分布式系统\\DS_Final\\dblp.xml', 'C:\\Works\\大三\\分布式系统\\DS_Final\\split_files', 10)
+split_xml('C:\\Works\\大三\\分布式系统\\DS_Final\\test.xml', 'C:\\Works\\大三\\分布式系统\\DS_Final\\split_files', 10)
