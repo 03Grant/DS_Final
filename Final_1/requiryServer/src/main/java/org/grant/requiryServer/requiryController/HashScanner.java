@@ -1,5 +1,8 @@
 package org.grant.requiryServer.requiryController;
 
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -9,18 +12,20 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.util.Scanner;
 
+@RestController
 public class HashScanner {
-    public static void main(String[] args) {
+
+    @GetMapping("/final1/hashscan")
+    public void HashScan(@RequestParam String author, @RequestParam int beginyear, @RequestParam int endyear) {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.print("Enter author name: ");
-        String authorToQuery = scanner.nextLine();
+        String authorToQuery = author;
 
-        System.out.print("Enter year: ");
-        int yearToQuery = scanner.nextInt();
+        int yearToQuery = beginyear;
 
         int paperCount = queryPaperCount(authorToQuery, yearToQuery);
 
+        //todo 这里返回一个Response之类的
         System.out.println(authorToQuery + " published " + paperCount + " papers in " + yearToQuery + ".");
     }
 

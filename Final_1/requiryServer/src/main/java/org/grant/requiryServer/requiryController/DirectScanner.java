@@ -1,18 +1,25 @@
 package org.grant.requiryServer.requiryController;
 
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.Scanner;
 
+@RestController
 public class DirectScanner {
-    public static void main(String[] args) {
+
+    @GetMapping("/final1/directscan")
+    public void DirectScan(@RequestParam String author, @RequestParam int beginyear, @RequestParam int endyear) {
         try {
             Scanner scanner = new Scanner(System.in);
 
             // 获取用户输入的XML文件路径
-            System.out.print("请输入XML文件路径：");
-            String xmlFilePath = scanner.nextLine();
-
+            //System.out.print("请输入XML文件路径：");
+           // String xmlFilePath = scanner.nextLine();
+            String xmlFilePath = "app/fileWare";
             long startTime = System.currentTimeMillis();
 
             // 使用 ProcessBuilder 运行 Shell 命令
@@ -36,6 +43,8 @@ public class DirectScanner {
             long endTime = System.currentTimeMillis();
             long elapsedTime = endTime - startTime;
 
+
+            //todo 查询结束后返回一个response之类的
             // 打印执行时间
             System.out.println("Command executed in " + elapsedTime + " milliseconds");
 
