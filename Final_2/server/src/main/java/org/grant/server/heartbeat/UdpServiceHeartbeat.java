@@ -1,23 +1,29 @@
-package org.grant.server.service;
+package org.grant.server.heartbeat;
 
+
+import jakarta.annotation.PostConstruct;
 import org.grant.server.dto.HeartBeatenDTO;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
+import java.net.*;
 
 @Service
-public class UdpService {
+public class UdpServiceHeartbeat {
 
-    private static final int PORT = 5177/* Your UDP port */;
+
+    private static final int PORT = 5178 /* Your UDP port */;
     private DatagramSocket socket;
     private final int bufferSize = 512;
 
-    public UdpService() throws SocketException {
+    @Value("${heartbeat.user.ip0}")
+    private String ip0;
+
+    @PostConstruct
+    public void init() throws SocketException, UnknownHostException {
         socket = new DatagramSocket(PORT);
+
     }
 
     // 发送心跳信息，@address 是IP地址
@@ -35,6 +41,7 @@ public class UdpService {
 
         // 解析接收到的数据
         String receivedData = new String(packet.getData(), 0, packet.getLength());
+        System.out.println("UdpService Receive ip" + receivedData);
         HeartBeatenDTO heartBeaten = new HeartBeatenDTO();
         heartBeaten.setIp(receivedData.trim()); // 接收到的数据是 IP 地址
 
@@ -42,4 +49,3 @@ public class UdpService {
     }
 
 }
-

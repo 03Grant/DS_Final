@@ -1,4 +1,5 @@
-package org.grant.server.manager;
+package org.grant.server.heartbeat;
+
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -11,21 +12,21 @@ public class ContactManager {
     // 使用线程安全的列表
     private final List<String> contactList = new CopyOnWriteArrayList<>();
 
-    public void addContact(String contact) {
-        // 添加一个新的联系人
-        contactList.add(contact);
-    }
-
+    // 检查列表中是否包含特定的 IP 地址
     public boolean contains(String ip) {
         return contactList.contains(ip);
     }
 
+    // 向列表中添加新的 IP 地址
+    public void addContact(String ip) {
+        if (!contains(ip)) {
+            contactList.add(ip);
+        }
+    }
+
+    // 获取当前所有的联系人 IP 地址
     public List<String> getContacts() {
-        // 返回联系人列表的副本，以防止外部修改
         return new ArrayList<>(contactList);
     }
 
-    // 如果还有其他相关操作，可以在这里添加方法
 }
-
-
