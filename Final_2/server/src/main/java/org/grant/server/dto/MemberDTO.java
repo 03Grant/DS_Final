@@ -1,13 +1,21 @@
 package org.grant.server.dto;
 
-/**
- * @nodeIdentifier 节点标识符，用IP地址代替
- * @nodeStatus     节点状态，分为active(活跃)，()
- */
-public class MemberDTO {
+import java.io.Serial;
+import java.io.Serializable;
+
+public class MemberDTO implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
     private String nodeIdentifier;
     private NodeStatus nodeStatus;
     private String timeStamp;
+
+    public MemberDTO(String nodeIdentifier, NodeStatus nodeStatus, String timeStamp) {
+        this.nodeIdentifier = nodeIdentifier;
+        this.nodeStatus = nodeStatus;
+        this.timeStamp = timeStamp;
+    }
 
     public String getNodeIdentifier() {
         return nodeIdentifier;

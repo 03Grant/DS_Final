@@ -35,6 +35,10 @@ public class ReceiveHeartBeaten {
         while (!Thread.currentThread().isInterrupted()) {
             try {
                 HeartBeatenDTO heartBeaten = udpServiceHeartbeat.receiveHeartbeat();
+                if(heartBeaten == null){
+                    return;
+                }
+
                 // 处理接收到的心跳
                 processHeartbeat(heartBeaten);
             } catch (Exception e) {

@@ -29,7 +29,7 @@ public class HashScanner {
         System.out.println(authorToQuery + " published " + paperCount + " papers in " + yearToQuery + ".");
     }
 
-    private static int queryPaperCount(String author, int year) {
+    private static int queryPaperCount(String author, List<int> year) {
         try {
             File xmlFile = new File("output.xml");
 
@@ -44,7 +44,7 @@ public class HashScanner {
                 Element yearElement = (Element) yearList.item(i);
                 int currentYear = Integer.parseInt(yearElement.getAttribute("value"));
 
-                if (currentYear == year) {
+                if (currentYear  year) {
                     NodeList authorList = yearElement.getElementsByTagName("Author");
                     for (int j = 0; j < authorList.getLength(); j++) {
                         Element authorElement = (Element) authorList.item(j);

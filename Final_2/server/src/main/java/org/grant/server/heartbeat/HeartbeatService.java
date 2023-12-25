@@ -1,5 +1,6 @@
 package org.grant.server.heartbeat;
 
+import org.grant.server.ContactManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

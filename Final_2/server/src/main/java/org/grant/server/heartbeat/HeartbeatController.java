@@ -1,5 +1,6 @@
 package org.grant.server.heartbeat;
 
+import org.grant.server.ContactManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,8 +37,8 @@ public class HeartbeatController {
         // 初始化 HeartbeatService
         heartbeatService.initializeMissedHeartbeats();
 
-        // 启动心跳接收服务
-        receiveHeartBeaten.init();
+        // 启动心跳接收服务 -->已经自动化启动了
+        // receiveHeartBeaten.init();
 
         return "Heartbeat monitoring started";
     }

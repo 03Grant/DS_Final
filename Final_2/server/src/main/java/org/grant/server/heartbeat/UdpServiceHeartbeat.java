@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.net.*;
 
+import static org.grant.server.dto.serverConfiguration.SERVER_STATUS;
+
 @Service
 public class UdpServiceHeartbeat {
 
@@ -28,6 +30,10 @@ public class UdpServiceHeartbeat {
 
     // 发送心跳信息，@address 是IP地址
     public void sendHeartbeat(String message, String address) throws IOException {
+        if(!SERVER_STATUS){
+            return;
+        }
+
         InetAddress inetAddress = InetAddress.getByName(address);
         DatagramPacket packet = new DatagramPacket(message.getBytes(), message.length(), inetAddress, PORT);
         socket.send(packet);
@@ -35,6 +41,11 @@ public class UdpServiceHeartbeat {
 
     // 接受其他服务器的IP心跳信息
     public HeartBeatenDTO receiveHeartbeat() throws IOException {
+
+        if(!SERVER_STATUS){
+            return null;
+        }
+
         byte[] buffer = new byte[bufferSize];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
         socket.receive(packet);
