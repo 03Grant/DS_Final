@@ -1,12 +1,15 @@
 package org.grant.server.heartbeat;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import org.grant.server.dto.HeartBeatenDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import static org.grant.server.dto.serverConfiguration.SERVER_STATUS;
 
 @Service
 public class ReceiveHeartBeaten {
@@ -34,7 +37,13 @@ public class ReceiveHeartBeaten {
     private void receiveHeartbeats() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
+                if(!SERVER_STATUS)
+                    continue;
                 HeartBeatenDTO heartBeaten = udpServiceHeartbeat.receiveHeartbeat();
+                if(heartBeaten == null){
+                    continue;
+                }
+
                 // 处理接收到的心跳
                 processHeartbeat(heartBeaten);
             } catch (Exception e) {
@@ -51,6 +60,7 @@ public class ReceiveHeartBeaten {
 
 
     // 清理资源
+    @PreDestroy
     public void destroy() {
         if (executorService != null && !executorService.isShutdown()) {
             executorService.shutdownNow();

@@ -86,7 +86,9 @@ public class HashScanner {
         return resultJson;
     }
 
+
     private static int queryPaperCount(String directoryPath, String xmlName, String author, List<Integer> years) {
+
         try {
             File xmlFile = new File(directoryPath+xmlName);
 
@@ -102,6 +104,7 @@ public class HashScanner {
             for (int i = 0; i < yearList.getLength(); i++) {
                 Element yearElement = (Element) yearList.item(i);
                 int currentYear = Integer.parseInt(yearElement.getAttribute("value"));
+
 
                 if (years.contains(currentYear)) {
                     NodeList authorList = yearElement.getElementsByTagName("Author");

@@ -1,5 +1,10 @@
 package org.grant.server.dto;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.io.Serial;
 import java.io.Serializable;
 
 /**
@@ -13,10 +18,36 @@ import java.io.Serializable;
  * @source          发送此消息的节点
  */
 public class GossipRMDTO implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
     private String nodeIdentifier;
-    private String nodeStatus;
+    private NodeStatus nodeStatus;
     private String timeStamp;
     private String source;
+
+    @JsonCreator
+    public GossipRMDTO(@JsonProperty("nodeIdentifier") String nodeIdentifier,
+                       @JsonProperty("nodeStatus") NodeStatus nodeStatus,
+                       @JsonProperty("timeStamp") String timeStamp,
+                       @JsonProperty("source") String source){
+        this.nodeIdentifier = nodeIdentifier;
+        this.nodeStatus = nodeStatus;
+        this.timeStamp = timeStamp;
+        this.source = source;
+    }
+
+    public GossipRMDTO(MemberDTO member, String source) {
+        this.nodeIdentifier = member.getNodeIdentifier();
+        this.nodeStatus = member.getNodeStatus();
+        this.timeStamp = member.getTimeStamp();
+        this.source = source;
+    }
+
+    @JsonIgnore
+    public MemberDTO getMemberDTO(){
+        return new MemberDTO(nodeIdentifier, nodeStatus, timeStamp);
+    }
 
     public String getNodeIdentifier() {
         return nodeIdentifier;
@@ -26,11 +57,11 @@ public class GossipRMDTO implements Serializable {
         this.nodeIdentifier = nodeIdentifier;
     }
 
-    public String getNodeStatus() {
+    public NodeStatus getNodeStatus() {
         return nodeStatus;
     }
 
-    public void setNodeStatus(String nodeStatus) {
+    public void setNodeStatus(NodeStatus nodeStatus) {
         this.nodeStatus = nodeStatus;
     }
 
