@@ -2,6 +2,7 @@ package org.grant.server.GossipRM;
 
 
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import org.grant.server.dto.GossipRMDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -11,6 +12,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.nio.charset.StandardCharsets;
 
 import static org.grant.server.dto.serverConfiguration.SERVER_STATUS;
 
@@ -22,9 +24,6 @@ public class UdpServiceRM {
     @Value("${test.user.port}")
     private int PORT;
 
-    @Value("${test.user.port1}")
-    private int PORT1;
-
     private DatagramSocket socket;
     private final int bufferSize = 1024;
 
@@ -33,21 +32,32 @@ public class UdpServiceRM {
         socket = new DatagramSocket(PORT);
     }
 
-    public void sendGossipRM(GossipRMDTO member, String destinationAddress) throws IOException {
-        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-             ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream)) {
+    public void sendGossipRM(String member, String destinationAddress) throws IOException {
+        byte[] byteData = member.getBytes(StandardCharsets.UTF_8);
 
-            objectOutputStream.writeObject(member);
-            byte[] byteData = byteArrayOutputStream.toByteArray();
-
+        try {
             InetAddress address = InetAddress.getByName(destinationAddress);
-            DatagramPacket packet = new DatagramPacket(byteData, byteData.length, address, PORT1);
+            DatagramPacket packet = new DatagramPacket(byteData, byteData.length, address, PORT);
             socket.send(packet);
             // System.out.println("Send RMInfo Successfully!");
+        } catch (IOException e) {
+            System.err.println("Error in sending RMInfo: " + e.getMessage());
+            throw e;
         }
+//        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+//             ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream)) {
+//
+//            objectOutputStream.writeObject(member);
+//            byte[] byteData = byteArrayOutputStream.toByteArray();
+//
+//            InetAddress address = InetAddress.getByName(destinationAddress);
+//            DatagramPacket packet = new DatagramPacket(byteData, byteData.length, address, PORT);
+//            socket.send(packet);
+//            // System.out.println("Send RMInfo Successfully!");
+//        }
     }
 
-    public GossipRMDTO receiveGossipRM() throws IOException, ClassNotFoundException {
+    public String receiveGossipRM() throws IOException, ClassNotFoundException {
         if(!SERVER_STATUS){
             return null;
         }
@@ -55,11 +65,27 @@ public class UdpServiceRM {
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
         socket.receive(packet);
 
-        System.out.println("UDP_RM: Receive packet and check it: ");
+        System.out.println("UDP_RM: Receive packet and check it.");
 
-        try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(buffer);
-             ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream)) {
-            return (GossipRMDTO) objectInputStream.readObject();
+        // Extract the data from the packet
+        String receivedJson = new String(packet.getData(), 0, packet.getLength(), StandardCharsets.UTF_8);
+        return receivedJson;
+//        byte[] buffer = new byte[bufferSize];
+//        DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+//        socket.receive(packet);
+//
+//        System.out.println("UDP_RM: Receive packet and check it: ");
+//
+//        try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(buffer);
+//             ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream)) {
+//            return (GossipRMDTO) objectInputStream.readObject();
+//        }
+    }
+
+    @PreDestroy
+    public void destroy() {
+        if (socket != null && !socket.isClosed()) {
+            socket.close();
         }
     }
 }

@@ -1,5 +1,8 @@
 package org.grant.server.dto;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.io.Serial;
 import java.io.Serializable;
 
@@ -11,7 +14,10 @@ public class MemberDTO implements Serializable {
     private NodeStatus nodeStatus;
     private String timeStamp;
 
-    public MemberDTO(String nodeIdentifier, NodeStatus nodeStatus, String timeStamp) {
+    @JsonCreator
+    public MemberDTO(@JsonProperty("nodeIdentifier") String nodeIdentifier,
+                     @JsonProperty("nodeStatus") NodeStatus nodeStatus,
+                     @JsonProperty("timeStamp") String timeStamp) {
         this.nodeIdentifier = nodeIdentifier;
         this.nodeStatus = nodeStatus;
         this.timeStamp = timeStamp;

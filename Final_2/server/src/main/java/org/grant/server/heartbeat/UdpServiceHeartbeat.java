@@ -2,6 +2,7 @@ package org.grant.server.heartbeat;
 
 
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import org.grant.server.dto.HeartBeatenDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -19,9 +20,6 @@ public class UdpServiceHeartbeat {
     private DatagramSocket socket;
     private final int bufferSize = 512;
 
-    @Value("${heartbeat.user.ip0}")
-    private String ip0;
-
     @PostConstruct
     public void init() throws SocketException, UnknownHostException {
         socket = new DatagramSocket(PORT);
@@ -33,7 +31,7 @@ public class UdpServiceHeartbeat {
         if(!SERVER_STATUS){
             return;
         }
-
+        System.out.println("Send heartbeat to: " + address );
         InetAddress inetAddress = InetAddress.getByName(address);
         DatagramPacket packet = new DatagramPacket(message.getBytes(), message.length(), inetAddress, PORT);
         socket.send(packet);
@@ -52,11 +50,18 @@ public class UdpServiceHeartbeat {
 
         // 解析接收到的数据
         String receivedData = new String(packet.getData(), 0, packet.getLength());
-        System.out.println("UdpService Receive ip" + receivedData);
+        System.out.println("Heartbeat UdpService Receive ip" + receivedData);
         HeartBeatenDTO heartBeaten = new HeartBeatenDTO();
         heartBeaten.setIp(receivedData.trim()); // 接收到的数据是 IP 地址
 
         return heartBeaten;
+    }
+
+    @PreDestroy
+    public void destroy() {
+        if (socket != null && !socket.isClosed()) {
+            socket.close();
+        }
     }
 
 }

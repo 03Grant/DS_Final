@@ -1,5 +1,9 @@
 package org.grant.server.dto;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.io.Serial;
 import java.io.Serializable;
 
@@ -22,12 +26,17 @@ public class GossipRMDTO implements Serializable {
     private String timeStamp;
     private String source;
 
-    public GossipRMDTO(String nodeIdentifier, NodeStatus nodeStatus, String timeStamp, String source) {
+    @JsonCreator
+    public GossipRMDTO(@JsonProperty("nodeIdentifier") String nodeIdentifier,
+                       @JsonProperty("nodeStatus") NodeStatus nodeStatus,
+                       @JsonProperty("timeStamp") String timeStamp,
+                       @JsonProperty("source") String source){
         this.nodeIdentifier = nodeIdentifier;
         this.nodeStatus = nodeStatus;
         this.timeStamp = timeStamp;
         this.source = source;
     }
+
     public GossipRMDTO(MemberDTO member, String source) {
         this.nodeIdentifier = member.getNodeIdentifier();
         this.nodeStatus = member.getNodeStatus();
@@ -35,6 +44,7 @@ public class GossipRMDTO implements Serializable {
         this.source = source;
     }
 
+    @JsonIgnore
     public MemberDTO getMemberDTO(){
         return new MemberDTO(nodeIdentifier, nodeStatus, timeStamp);
     }

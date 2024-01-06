@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static org.grant.server.dto.serverConfiguration.SERVER_STATUS;
+
 @Service
 public class ReceiveGossipAE {
     private final UdpServiceAE udpServiceAE;
@@ -30,7 +32,19 @@ public class ReceiveGossipAE {
     private void receiveLoop() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
-                GossipAEDTO receivedMember = udpServiceAE.receiveGossipAE();
+                if(!SERVER_STATUS){
+                    continue;
+                }
+                String receivedMember_json = udpServiceAE.receiveGossipAE();
+                System.out.println("接收到的AE json文件：");
+                System.out.println(receivedMember_json);
+                System.out.println("-------------------");
+                // 转换json
+                GossipAEDTO receivedMember = GossipAEDataTransfer.fromJson(receivedMember_json);
+
+                if(!SERVER_STATUS){
+                    continue;
+                }
                 gossipAEService.processMemberInfo(receivedMember);
 
             } catch (Exception e) {

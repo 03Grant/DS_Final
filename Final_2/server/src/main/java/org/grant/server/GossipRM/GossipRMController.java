@@ -1,21 +1,21 @@
 package org.grant.server.GossipRM;
 
-
-
-import org.grant.server.ContactManager;
+import org.grant.server.Manager.ContactManager;
 import org.grant.server.dto.GossipRMDTO;
 import org.grant.server.dto.NodeStatus;
 import org.grant.server.dto.serverConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import static org.grant.server.TimeHelper.getCurrentTimeFormatted;
+import static org.grant.server.helper.TimeHelper.getCurrentTimeFormatted;
 import static org.grant.server.dto.serverConfiguration.selfip;
 
 
 @RestController
+@CrossOrigin(origins = "*")
 public class GossipRMController {
 
 
@@ -54,19 +54,29 @@ public class GossipRMController {
 
         GossipRMDTO gossipRMDTO = new GossipRMDTO(selfip, NodeStatus.DEPARTED, getCurrentTimeFormatted(), selfip);
         // 选择contact
-        int sendTime = 2;
+        int sendTime = 4;
         for(int i = 0; i< sendTime;i++){
             String des_ip = C.getOneContactIp(selfip);
+            System.out.println("---------------" + selfip + " leave info 已经被发送到" + des_ip+"-----------");
             if(des_ip!=null)
                 gossipRMService.sendUpdateInfo(gossipRMDTO,des_ip);
         }
         // 一些模拟关机操作：
         //1. 设置STATUS，关闭UDP_RM接收。但是UDP_AE只涉及在初始化时使用，所以UDP_AE可以不关，等待模拟开机命令
+        //2. 清空Membership,等待模拟开机后重新载入
+        gossipRMService.cleanMembership();
+        serverConfiguration.SERVER_STATUS = false;
+        return selfip + " successfully leaved!";
+    }
+
+    @GetMapping("/final2/crush")
+    public String crush(){
+        // 一些模拟关机操作：
+        //1. 设置STATUS，关闭UDP_RM接收。但是UDP_AE只涉及在初始化时使用，所以UDP_AE可以不关，等待模拟开机命令
         serverConfiguration.SERVER_STATUS = false;
         //2. 清空Membership,等待模拟开机后重新载入
         gossipRMService.cleanMembership();
-
-        return selfip + " successfully leaved!";
+        return selfip + " crushed!";
     }
 
 

@@ -1,4 +1,4 @@
-package org.grant.server;
+package org.grant.server.helper;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

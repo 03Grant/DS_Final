@@ -1,10 +1,11 @@
-package org.grant.server;
+package org.grant.server.Manager;
 
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static org.grant.server.dto.serverConfiguration.selfip;
 
@@ -12,7 +13,7 @@ import static org.grant.server.dto.serverConfiguration.selfip;
 public class ContactManager {
 
     // 使用线程安全的列表
-    private final List<String> contactList = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<String> contactList = new CopyOnWriteArrayList<>();
 
     // 检查列表中是否包含特定的 IP 地址
     public boolean contains(String ip) {
@@ -32,13 +33,26 @@ public class ContactManager {
     }
 
     public String getOneContactIp(String ip_source) {
-        for (String contact : contactList) {
-            if (!contact.equals(ip_source) && contact.equals(selfip)) {
+        if (contactList.isEmpty()) {
+            return null; // 列表为空时返回 null
+        }
+        int attempts = contactList.size();
+        while (attempts-- > 0) {
+            int index = ThreadLocalRandom.current().nextInt(contactList.size());
+            String contact = contactList.get(index);
+
+            if (!(contact.equals(ip_source) || contact.equals(selfip))) {
                 return contact;
             }
         }
         return null; // 如果没有找到符合条件的IP地址
     }
+
+
+    public void cleanContact(){
+        contactList.clear();
+    }
+
 
 
 }

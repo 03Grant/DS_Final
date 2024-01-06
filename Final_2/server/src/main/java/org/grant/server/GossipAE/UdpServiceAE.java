@@ -2,6 +2,7 @@ package org.grant.server.GossipAE;
 
 
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import org.grant.server.dto.GossipAEDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -11,6 +12,9 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.nio.charset.StandardCharsets;
+
+import static org.grant.server.dto.serverConfiguration.SERVER_STATUS;
 
 @Service
 public class UdpServiceAE {
@@ -20,8 +24,6 @@ public class UdpServiceAE {
     @Value("${test.user.AEport}")
     private int PORT;
 
-    @Value("${test.user.AEport1}")
-    private int PORT1;
 
     private DatagramSocket socket;
     private final int bufferSize = 1024;
@@ -31,30 +33,67 @@ public class UdpServiceAE {
         socket = new DatagramSocket(PORT);
     }
 
-    public void sendGossipAE(GossipAEDTO member, String destinationAddress) throws IOException {
-        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-             ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream)) {
-
-            objectOutputStream.writeObject(member);
-            byte[] byteData = byteArrayOutputStream.toByteArray();
-
-            InetAddress address = InetAddress.getByName(destinationAddress);
-            DatagramPacket packet = new DatagramPacket(byteData, byteData.length, address, PORT1);
-            socket.send(packet);
-            System.out.println("Send AEInfo to" + address + " Successfully!");
+    public void sendGossipAE(String member, String destinationAddress) throws IOException {
+        if(!SERVER_STATUS){
+            return;
         }
+        byte[] byteData = member.getBytes(StandardCharsets.UTF_8);
+
+        try {
+            InetAddress address = InetAddress.getByName(destinationAddress);
+            DatagramPacket packet = new DatagramPacket(byteData, byteData.length, address, PORT);
+            socket.send(packet);
+            System.out.println("Send AEInfo to " + address + " Successfully!");
+        } catch (IOException e) {
+            System.err.println("Error in sending AEInfo: " + e.getMessage());
+            throw e;
+        }
+
+//        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+//             ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream)) {
+//
+//            objectOutputStream.writeObject(member);
+//            byte[] byteData = byteArrayOutputStream.toByteArray();
+//
+//            InetAddress address = InetAddress.getByName(destinationAddress);
+//            DatagramPacket packet = new DatagramPacket(byteData, byteData.length, address, PORT);
+//            socket.send(packet);
+//            System.out.println("Send AEInfo to" + address + " Successfully!");
+//        }
     }
 
-    public GossipAEDTO receiveGossipAE() throws IOException, ClassNotFoundException {
+    public String receiveGossipAE() throws IOException, ClassNotFoundException {
+        if(!SERVER_STATUS){
+            return null;
+        }
+
         byte[] buffer = new byte[bufferSize];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
         socket.receive(packet);
 
-        System.out.println("UDP_AE: Receive packet and check it: ");
+        System.out.println("UDP_AE: Receive packet and check it.");
 
-        try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(buffer);
-             ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream)) {
-            return (GossipAEDTO) objectInputStream.readObject();
+        // Extracting the data from the packet
+        String receivedJson = new String(packet.getData(), 0, packet.getLength(), StandardCharsets.UTF_8);
+        return receivedJson;
+
+
+//        byte[] buffer = new byte[bufferSize];
+//        DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+//        socket.receive(packet);
+//
+//        System.out.println("UDP_AE: Receive packet and check it: ");
+//
+//        try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(buffer);
+//             ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream)) {
+//            return (GossipAEDTO) objectInputStream.readObject();
+//        }
+    }
+
+    @PreDestroy
+    public void destroy() {
+        if (socket != null && !socket.isClosed()) {
+            socket.close();
         }
     }
 }

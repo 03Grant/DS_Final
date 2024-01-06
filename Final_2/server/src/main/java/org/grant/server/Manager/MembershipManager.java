@@ -1,4 +1,4 @@
-package org.grant.server;
+package org.grant.server.Manager;
 
 
 import org.grant.server.dto.MemberDTO;
@@ -6,6 +6,7 @@ import org.grant.server.dto.NodeStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static org.grant.server.dto.serverConfiguration.selfip;
 
@@ -25,10 +26,23 @@ import static org.grant.server.dto.serverConfiguration.selfip;
 @Service
 public class MembershipManager {
     // 使用CopyOnWriteArrayList来确保线程安全
-    private CopyOnWriteArrayList<MemberDTO> memberList = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<MemberDTO> memberList = new CopyOnWriteArrayList<>();
 
     public void addMember(MemberDTO member) {
-        memberList.add(member);
+        boolean exists = false;
+
+        for (MemberDTO m : memberList) {
+            if (m.getNodeIdentifier().equals(member.getNodeIdentifier())) {
+                exists = true;
+                m.setNodeStatus(NodeStatus.ACTIVE); // 假设 NodeStatus 是枚举类型，且包含 ACTIVE 状态
+                break;
+            }
+        }
+
+        // 如果不存在相同标识符的成员，则添加新成员
+        if (!exists) {
+            memberList.add(member);
+        }
     }
 
     // 一般不用清除单个，保存记录
@@ -78,10 +92,16 @@ public class MembershipManager {
     }
 
     public String getOneMemberIp_initialize(String ip_source) {
-        for (MemberDTO member : memberList) {
-            String memberIp = member.getNodeIdentifier();
-            if (!memberIp.equals(ip_source) && !memberIp.equals(selfip)) {
-                return memberIp;
+        if (memberList.isEmpty()) {
+            return null; // 列表为空时返回 null
+        }
+        int attempts = memberList.size();
+        while (attempts-- > 0) {
+            int index = ThreadLocalRandom.current().nextInt(memberList.size());
+            String contact = memberList.get(index).getNodeIdentifier();
+
+            if (!(contact.equals(ip_source) || contact.equals(selfip))) {
+                return contact;
             }
         }
         return null; // 如果没有找到符合条件的IP地址

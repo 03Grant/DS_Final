@@ -3,33 +3,39 @@ package org.grant.server.GossipAE;
 
 
 import org.grant.server.GossipRM.GossipRMService;
-import org.grant.server.MembershipManager;
+import org.grant.server.Manager.MembershipManager;
 import org.grant.server.dto.*;
+import org.grant.server.heartbeat.HeartbeatService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-import static org.grant.server.TimeHelper.getCurrentTimeFormatted;
+import static org.grant.server.helper.TimeHelper.getCurrentTimeFormatted;
 import static org.grant.server.dto.serverConfiguration.selfip;
 
 
 @RestController
+@CrossOrigin(origins = "*")
 public class GossipAEController {
 
 
     private final GossipAEService gossipAEService;
     private final MembershipManager membershipManager;
     private final GossipRMService gossipRMService;
+    private final HeartbeatService heartbeatService;
 
     @Autowired
     public GossipAEController
-            ( GossipAEService gossipAEService,MembershipManager membershipManager,GossipRMService gossipRMService) {
+            ( GossipAEService gossipAEService,MembershipManager membershipManager,
+              GossipRMService gossipRMService,HeartbeatService heartbeatService) {
         this.gossipAEService = gossipAEService;
         this.membershipManager = membershipManager;
         this.gossipRMService = gossipRMService;
+        this.heartbeatService=heartbeatService;
     }
 
 
@@ -47,6 +53,7 @@ public class GossipAEController {
         //ip = "127.0.0.1";
 
         // 1. Introducer添加改节点的信息
+        // todo 不止是添加，还需要进行修改？
         MemberDTO member = new MemberDTO(ip, NodeStatus.ACTIVE,timeStamp);
         membershipManager.addMember(member);
 
@@ -67,6 +74,21 @@ public class GossipAEController {
             if(des_ip!=null)
                  gossipRMService.sendUpdateInfo(RMinfo,des_ip);
         }
+        // 加入之后移除不活跃联系人状态
+        heartbeatService.removeInactive(ip);
+
+        // todo 测试：初始话时的列表
+        List<MemberDTO> test = membershipManager.getMemberList();
+        System.out.println("----------Introducer初始化后列表为：----------");
+        for (MemberDTO m:test
+        ) {
+            System.out.print("nodeIdentifier: "+m.getNodeIdentifier());
+            System.out.print(" | status: "+m.getNodeStatus());
+            System.out.println(" | timeStamp: "+m.getTimeStamp());
+        }
+        System.out.println("-----------------初始化展示结束end---------------------------------");
+        System.out.println();
+
         return "Joined Successfully";
     }
 
@@ -98,9 +120,9 @@ public class GossipAEController {
         return selfip;
     }
     @GetMapping("/final2/show-members")
-    public String showMembers(){
-        gossipAEService.getMemberList();
-        return "Successfully presented";
+    public List<MemberDTO> showMembers(){
+
+        return gossipAEService.getMemberList();
     }
 
     @GetMapping("/final2/test-udp")

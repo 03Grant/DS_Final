@@ -1,5 +1,8 @@
 package org.grant.server.dto;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
@@ -20,7 +23,10 @@ public class GossipAEDTO implements Serializable {
     private String timeStamp;
     private String source;
 
-    public GossipAEDTO(List<MemberDTO> memberList, String timeStamp, String source) {
+    @JsonCreator
+    public GossipAEDTO(@JsonProperty("MemberList") List<MemberDTO> memberList,
+                       @JsonProperty("timeStamp") String timeStamp,
+                       @JsonProperty("source") String source) {
         MemberList = memberList;
         this.timeStamp = timeStamp;
         this.source = source;

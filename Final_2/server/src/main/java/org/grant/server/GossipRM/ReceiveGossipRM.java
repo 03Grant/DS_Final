@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static org.grant.server.dto.serverConfiguration.SERVER_STATUS;
+
 @Service
 public class ReceiveGossipRM {
     private final UdpServiceRM udpServiceRM;
@@ -31,9 +33,18 @@ public class ReceiveGossipRM {
     private void receiveLoop() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
-                GossipRMDTO receivedMember = udpServiceRM.receiveGossipRM();
+                // todo 解决关机后还能接收的问题
+                if(!SERVER_STATUS)
+                    continue;
+                // 转换
+                String receivedMember_json = udpServiceRM.receiveGossipRM();
+                System.out.println("接收到的RM json文件：");
+                System.out.println(receivedMember_json);
+                System.out.println("-------------------");
+
+                GossipRMDTO receivedMember = GossipRMDataTransfer.fromJson(receivedMember_json);
                 if(receivedMember == null)
-                    return;
+                    continue;
                 gossipRMService.processMemberInfo(receivedMember);
 
             } catch (Exception e) {
