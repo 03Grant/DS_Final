@@ -5,6 +5,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -55,7 +57,9 @@ public class DirectScanner {
                         block.put("num", paperCount);
                         dataList.add(block);
                     }
-                    return new ResponseEntity<>(dataList.toString(), HttpStatus.OK);
+                    // 将 dataList 转换为 JSON 字符串
+                    String jsonResult = convertListToJson(dataList);
+                    return new ResponseEntity<>(jsonResult, HttpStatus.OK);
                 } catch (Exception e) {
                     return new ResponseEntity<>("查询失败", HttpStatus.INTERNAL_SERVER_ERROR);
                 }
@@ -64,6 +68,12 @@ public class DirectScanner {
             }
         }
         return new ResponseEntity<>("目录无效", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    private String convertListToJson(List<Map<String, Object>> dataList) throws JsonProcessingException {
+        // 使用 ObjectMapper 将 List 转换为 JSON 字符串
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.writeValueAsString(dataList);
     }
 
     public static Map<String, Object> parseXmlPath(String xmlName) {
@@ -131,14 +141,13 @@ public class DirectScanner {
         // 构建 AWK 命令
         commandBuilder.append("awk -F'[<>]' '/<author>").append(author).append("<\\/author>/ { author_found=1 } ");
         commandBuilder.append("/<year>([0-9]+)<\\/year>/ { if (author_found && ($3 >= ");
-
         // 添加年份范围
         for (int year : years) {
             commandBuilder.append(year).append(" || $3 == ").append(year).append(" || ");
         }
         commandBuilder.delete(commandBuilder.length() - 4, commandBuilder.length());
 
-        commandBuilder.append(")) { count++ } author_found=0 } END { print \"").append(author).append(" 论文数:\", count }' ");
+        commandBuilder.append(")) { count++ } author_found=0 } END { print count }' ");
         commandBuilder.append(directoryPath).append("/").append(xmlName);
 
         return commandBuilder.toString();

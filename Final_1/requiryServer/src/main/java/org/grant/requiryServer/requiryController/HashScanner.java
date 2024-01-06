@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -21,7 +23,7 @@ import java.util.regex.Pattern;
 public class HashScanner {
     @GetMapping("/final1/hashscan")
     public ResponseEntity<String> HashScan(@RequestParam String author, @RequestParam int beginyear, @RequestParam int endyear) {
-        String directoryPath = "/app/fileWare/";
+        String directoryPath = "/app/hash/";
         File directory = new File(directoryPath);
 
         if (directory.exists() && directory.isDirectory()) {
@@ -53,7 +55,9 @@ public class HashScanner {
                         block.put("num", paperCount);
                         dataList.add(block);
                     }
-                    return new ResponseEntity<>(dataList.toString(), HttpStatus.OK);
+                    // 将 dataList 转换为 JSON 字符串
+                    String jsonResult = convertListToJson(dataList);
+                    return new ResponseEntity<>(jsonResult, HttpStatus.OK);
                 } catch (Exception e) {
                     return new ResponseEntity<>("查询失败", HttpStatus.INTERNAL_SERVER_ERROR);
                 }
@@ -62,6 +66,12 @@ public class HashScanner {
             }
         }
         return new ResponseEntity<>("目录无效", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    private String convertListToJson(List<Map<String, Object>> dataList) throws JsonProcessingException {
+        // 使用 ObjectMapper 将 List 转换为 JSON 字符串
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.writeValueAsString(dataList);
     }
 
     public static Map<String, Object> parseXmlPath(String xmlName) {
