@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
 public class HashScanner {
     @GetMapping("/final1/hashscan")
     public ResponseEntity<String> HashScan(@RequestParam String author, @RequestParam int beginyear, @RequestParam int endyear) {
-        String directoryPath = "/app/fileWare/";
+        String directoryPath = "/app/hash/";
         File directory = new File(directoryPath);
 
         if (directory.exists() && directory.isDirectory()) {
