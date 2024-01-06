@@ -5,6 +5,11 @@ import org.grant.server.Manager.MembershipManager;
 import org.grant.server.dto.MemberDTO;
 import org.grant.server.dto.serverConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -16,7 +21,7 @@ import java.util.List;
 import static org.grant.server.dto.serverConfiguration.selfip;
 
 @RestController
-@RequestMapping("lo")
+@RequestMapping("/config")
 @CrossOrigin(origins = "*")
 public class ConfigurationController {
 
@@ -59,6 +64,24 @@ public class ConfigurationController {
     @GetMapping("/getlist")
     public List<MemberDTO> getMembers() {
         return membershipManager.getMemberList();
+    }
+
+    // 返回日志
+    @GetMapping(value = "/logs/server_logs", produces = MediaType.TEXT_PLAIN_VALUE)
+    public ResponseEntity<Resource> getServerLogs() {
+        try {
+            Resource resource = new FileSystemResource("/app/logs/server_logs.log");
+            if (resource.exists()) {
+                return ResponseEntity.ok()
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
 }
