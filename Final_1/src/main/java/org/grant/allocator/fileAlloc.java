@@ -68,9 +68,10 @@ public class fileAlloc {
 
                 // 发送文件名,这里用了PrintWriter
                 printWriter.println(fileNameWithSuffix);
+                printWriter.flush();
 
                 // 发送文件数据
-                byte[] buffer = new byte[4096];
+                byte[] buffer = new byte[65536];
                 int bytesRead;
                 while ((bytesRead = bufferedInputStream.read(buffer)) != -1) {
                     outputStream.write(buffer, 0, bytesRead);

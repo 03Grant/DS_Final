@@ -20,10 +20,10 @@ public class IPSetting {
         serverIP[2].IP = "43.142.91.204";
         serverIP[2].PORT= 4177;
 
-        serverIP[3].IP = "47.96.73.250";
+        serverIP[3].IP = "121.43.98.159";
         serverIP[3].PORT= 4177;
 
-        serverIP[4].IP = "47.99.162.243";
+        serverIP[4].IP = "8.136.118.46";
         serverIP[4].PORT= 4177;
 
         serverIP[5].IP = "8.136.125.35";
